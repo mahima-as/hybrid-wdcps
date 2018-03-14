@@ -1,0 +1,8 @@
+
+1) Obtain detection capability, detection time, traversal capability and traversal time matrices. 
+
+2) Create a network parsing script that parses the input epanet file. 
+
+3) Create impact script that creates the impact matrix for each junction 
+
+4) Sensor placement script 

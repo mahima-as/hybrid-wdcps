@@ -54,6 +54,8 @@ def parse_input(file_path):
 	pipe_input_df = pd.DataFrame(pipe_list,columns=['pipe_id','node1','node2','length'])
 	pipe_input_df[['length']] = pipe_input_df[['length']].apply(pd.to_numeric)
 
+	# node_input_df gives details about each node in the network
+	# pipe_input_df gives details about each pipe in the network
 
 	return(NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df)
 
@@ -225,6 +227,8 @@ def isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_ti
 				temp_time = temp_distance/temp_velocity
 				temp_time = int(math.ceil(temp_time))
 			
+
+
 			current_node_list.insert(len(current_node_list),temp_node)
 			current_node_distance.insert(len(current_node_distance),temp_distance)
 			current_node_velocity.insert(len(current_node_velocity),temp_velocity)
@@ -234,6 +238,10 @@ def isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_ti
 		connected_distance.append(current_node_distance)
 		connected_velocity.append(current_node_velocity)
 		connected_time.append(current_node_time)
+
+	# unique_node_id returns the unique node id's
+	# isConnected_list returns the node id's that the current node index is connected to (in the direction of flow)
+	# connected_distance/velocity/time is the corresponding distance, velocity and time 
 
 	return(unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time)
 
@@ -257,7 +265,10 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 	stack.insert(0,leaking_node_index)
 	visited_array = [False for i in range(len(unique_node_id))]
 
-	
+	# Do a DFS from the node in which leak has been created. Check in its connected pipes if a pressure difference can be detected
+	# Repeat this until the effect of the leak can no longer be detected. For each introduced leak, build a vector giving details 
+	# of the extent of the leak's effects
+
 	while len(stack) > 0:
 		parent_node_index = stack.pop()
 		if visited_array[parent_node_index] == True:
@@ -288,23 +299,28 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 
 
 
+def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list):
+	mobile_node_index = unique_node_id.index(mobile_node_id)
+	mobile_traversal_array = [float('inf') for i in range(len(unique_node_id))]
+	mobile_traversal_array[mobile_node_index] = 1
+
+	current_node_connections = isConnected_list[mobile_node_index]
+	if len(current_node_connections)!=0:
+		for i in xrange(0,len(current_node_connections)):
+			connected_node_index = unique_node_id.index(current_node_connections[i])
+			mobile_traversal_array[connected_node_index] = float(1/len(current_node_connections))
+	return(mobile_traversal_array)
+
 
 
 NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df = parse_input("../Data/final_input.inp")
 
 node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,1)
 
-# unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
+unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
 
 # distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(3,unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
 
-print(node_first_time_store)
-print(node_second_time_store)
-print(link_first_time_store)
-print(link_second_time_store)
-
-
-
-
+mobile_traversal_array = mobileMatrixCreation("51956",unique_node_id,isConnected_list)
 
 

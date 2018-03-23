@@ -1,10 +1,10 @@
-import leak_process
+import wssc_leak_parse_script
 import epanet_call
 from random import randint
 import math
 import numpy as np
 from epanet_call import epanet_call
-from leak_process import parse_input,parse_output,isConnected,leakMatrixCreation
+from wssc_leak_parse_script import parse_input,parse_output,isConnected,leakMatrixCreation
 
 file_path = "../Data/final_input.inp"
 output_file_path = "../Data/final_output.txt"
@@ -41,7 +41,7 @@ final_distance_matrix = list()
 final_demand_shortage_matrix = list()
 final_detection_capability_matrix = list()
 
-print len(unique_node_list)
+# print len(unique_node_list)
 
 for i in xrange(0,len(unique_node_list)):
 # for p in xrange(0,1):
@@ -62,43 +62,43 @@ for i in xrange(0,len(unique_node_list)):
 
 	node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,unique_node_list[i])
 
-	unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
-	# print(connected_time)
-	# thefile = open("../Output/WSSC/isconnectedlist.txt","w")
-	# for item in isConnected_list:
- # 		print>>thefile, item
- # 	thefile = open("../Output/WSSC/connecteddistance.txt","w")
-	# for item in connected_distance:
- # 		print>>thefile, item
- # 	thefile = open("../Output/WSSC/connectedvelocity.txt","w")
-	# for item in connected_velocity:
- # 		print>>thefile, item
- # 	thefile = open("../Output/WSSC/connected_time.txt","w")
-	# for item in connected_time:
- # 		print>>thefile, item
+# 	unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
+# 	# print(connected_time)
+# 	# thefile = open("../Output/WSSC/isconnectedlist.txt","w")
+# 	# for item in isConnected_list:
+#  # 		print>>thefile, item
+#  # 	thefile = open("../Output/WSSC/connecteddistance.txt","w")
+# 	# for item in connected_distance:
+#  # 		print>>thefile, item
+#  # 	thefile = open("../Output/WSSC/connectedvelocity.txt","w")
+# 	# for item in connected_velocity:
+#  # 		print>>thefile, item
+#  # 	thefile = open("../Output/WSSC/connected_time.txt","w")
+# 	# for item in connected_time:
+#  # 		print>>thefile, item
 
-	distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
+# 	distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
 
-	final_detection_time_matrix.append(detection_time_array)
-	final_distance_matrix.append(distance_array)
-	final_demand_shortage_matrix.append(demand_shortage_array)
-	final_detection_capability_matrix.append(detection_capability_array)
-
-
-final_detection_time_matrix = np.asarray(final_detection_time_matrix).T
-final_distance_matrix = np.asarray(final_distance_matrix).T
-final_demand_shortage_matrix = np.asarray(final_demand_shortage_matrix).T
-final_detection_capability_matrix = np.asarray(final_detection_capability_matrix).T
+# 	final_detection_time_matrix.append(detection_time_array)
+# 	final_distance_matrix.append(distance_array)
+# 	final_demand_shortage_matrix.append(demand_shortage_array)
+# 	final_detection_capability_matrix.append(detection_capability_array)
 
 
+# final_detection_time_matrix = np.asarray(final_detection_time_matrix).T
+# final_distance_matrix = np.asarray(final_distance_matrix).T
+# final_demand_shortage_matrix = np.asarray(final_demand_shortage_matrix).T
+# final_detection_capability_matrix = np.asarray(final_detection_capability_matrix).T
 
-# np.savetxt("../Output/WSSC/detectionTime.csv", final_detection_time_matrix, delimiter=",")
-# np.savetxt("../Output/WSSC/distance.csv", final_distance_matrix, delimiter=",")
-# np.savetxt("../Output/WSSC/demandShortage.csv", final_demand_shortage_matrix, delimiter=",")
-# np.savetxt("../Output/WSSC/detectionCapability.csv", final_detection_capability_matrix, delimiter=",")
 
 
-# print final_detection_time_matrix
-# print final_detection_capability_matrix
-# print final_demand_shortage_matrix
-# print final_distance_matrix
+# # np.savetxt("../Output/WSSC/detectionTime.csv", final_detection_time_matrix, delimiter=",")
+# # np.savetxt("../Output/WSSC/distance.csv", final_distance_matrix, delimiter=",")
+# # np.savetxt("../Output/WSSC/demandShortage.csv", final_demand_shortage_matrix, delimiter=",")
+# # np.savetxt("../Output/WSSC/detectionCapability.csv", final_detection_capability_matrix, delimiter=",")
+
+
+# # print final_detection_time_matrix
+# # print final_detection_capability_matrix
+# # print final_demand_shortage_matrix
+# # print final_distance_matrix

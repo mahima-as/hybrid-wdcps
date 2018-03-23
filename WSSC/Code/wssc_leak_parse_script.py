@@ -127,62 +127,63 @@ def parse_output(file_path, NUMBER_OF_ELEMENTS,leaking_node_id):
 	##################################################################################################################
 	
 	#USE THIS ONLY IF YOU NEED THE FLOWDATA FILES FOR BREZO
-	brezo_lines = [line.rstrip('\n') for line in open('./brezo_related/flowdata52417.dat')]
 
-	leaking_node_index = node_second_time_store[node_second_time_store['id']==leaking_node_id].index.tolist()
-	leaking_node_index = leaking_node_index[0]
+	# brezo_lines = [line.rstrip('\n') for line in open('./brezo_related/flowdata52417.dat')]
+
+	# leaking_node_index = node_second_time_store[node_second_time_store['id']==leaking_node_id].index.tolist()
+	# leaking_node_index = leaking_node_index[0]
 	
-	first_pressure_compute = node_second_time_store['pressure'][leaking_node_index]
+	# first_pressure_compute = node_second_time_store['pressure'][leaking_node_index]
 	
-	node_third_time_store = list()
-	link_third_time_store = list()
+	# node_third_time_store = list()
+	# link_third_time_store = list()
 
-	######  THIRD TIME FOR THE SAKE OF BREZO ########
-	for i in xrange(0,NUMBER_OF_NODES):
-		current_line = lines[result_beginning_index+i]
-		current_line = list(current_line.split()[:4])
-		# current_line[:1] = map(int,current_line[:1])
-		current_line[1:4] = map(float,current_line[1:4])
-		node_third_time_store.append(current_line)
+	# ######  THIRD TIME FOR THE SAKE OF BREZO ########
+	# for i in xrange(0,NUMBER_OF_NODES):
+	# 	current_line = lines[result_beginning_index+i]
+	# 	current_line = list(current_line.split()[:4])
+	# 	# current_line[:1] = map(int,current_line[:1])
+	# 	current_line[1:4] = map(float,current_line[1:4])
+	# 	node_third_time_store.append(current_line)
 
-	result_beginning_index += NUMBER_OF_NODES
-	result_beginning_index += 7
+	# result_beginning_index += NUMBER_OF_NODES
+	# result_beginning_index += 7
 	
-	for i in xrange(0,NUMBER_OF_LINKS):
-		current_line = lines[result_beginning_index+i]
-		current_line = list(current_line.split()[:4])
-		# current_line[:1] = map(int,current_line[:1])
-		current_line[1:4] = map(float,current_line[1:4])
-		link_third_time_store.append(current_line)
+	# for i in xrange(0,NUMBER_OF_LINKS):
+	# 	current_line = lines[result_beginning_index+i]
+	# 	current_line = list(current_line.split()[:4])
+	# 	# current_line[:1] = map(int,current_line[:1])
+	# 	current_line[1:4] = map(float,current_line[1:4])
+	# 	link_third_time_store.append(current_line)
 
-	result_beginning_index += NUMBER_OF_LINKS
-	result_beginning_index += 7
+	# result_beginning_index += NUMBER_OF_LINKS
+	# result_beginning_index += 7
 
-	node_third_time_store = pd.DataFrame(node_third_time_store,columns = ['id','demand','head','pressure'])
-	link_third_time_store = pd.DataFrame(link_third_time_store,columns = ['pipe_id','flow','velocity','headloss'])
+	# node_third_time_store = pd.DataFrame(node_third_time_store,columns = ['id','demand','head','pressure'])
+	# link_third_time_store = pd.DataFrame(link_third_time_store,columns = ['pipe_id','flow','velocity','headloss'])
 
-	second_pressure_compute = node_third_time_store['pressure'][leaking_node_index]
+	# second_pressure_compute = node_third_time_store['pressure'][leaking_node_index]
 
-	first_flow_compute = 300*(first_pressure_compute**3)
-	second_flow_compute = 300*(second_pressure_compute**3)
+	# first_flow_compute = 300*(first_pressure_compute**3)
+	# second_flow_compute = 300*(second_pressure_compute**3)
 
-	# first_flow_compute = math.ceil(first_flow_compute * (0.3048**3))
-	# second_flow_compute = math.ceil(second_flow_compute * (0.3048**3))
+	# # first_flow_compute = math.ceil(first_flow_compute * (0.3048**3))
+	# # second_flow_compute = math.ceil(second_flow_compute * (0.3048**3))
 
-	split_line = brezo_lines[3].split()
-	split_line[-1] = str(first_flow_compute)
-	brezo_lines[3] = str(split_line[0]) + str('  ') + str(split_line[1]) + str(' ') + str(split_line[2]) + str(' ') + str(split_line[3]) + str(' ') + str(split_line[4]) + str(' ') + str(split_line[5]) + str(' ') + str(split_line[6]) + str('  ') + str(split_line[7])
+	# split_line = brezo_lines[3].split()
+	# split_line[-1] = str(first_flow_compute)
+	# brezo_lines[3] = str(split_line[0]) + str('  ') + str(split_line[1]) + str(' ') + str(split_line[2]) + str(' ') + str(split_line[3]) + str(' ') + str(split_line[4]) + str(' ') + str(split_line[5]) + str(' ') + str(split_line[6]) + str('  ') + str(split_line[7])
 	
-	split_line = brezo_lines[4].split()
-	split_line[-1] = str(second_flow_compute)
-	brezo_lines[4] = str(split_line[0]) + str('  ') + str(split_line[1]) + str(' ') + str(split_line[2]) + str(' ') + str(split_line[3]) + str(' ') + str(split_line[4]) + str(' ') + str(split_line[5]) + str(' ') + str(split_line[6]) + str('  ') + str(split_line[7])
+	# split_line = brezo_lines[4].split()
+	# split_line[-1] = str(second_flow_compute)
+	# brezo_lines[4] = str(split_line[0]) + str('  ') + str(split_line[1]) + str(' ') + str(split_line[2]) + str(' ') + str(split_line[3]) + str(' ') + str(split_line[4]) + str(' ') + str(split_line[5]) + str(' ') + str(split_line[6]) + str('  ') + str(split_line[7])
 
-	output_string = str('./brezo_related/data/') + str(leaking_node_id) + str('.dat')
-	brezo_output = open(output_string, 'w')
-	for line in brezo_lines:
-  		brezo_output.write("%s\n" % line)
+	# output_string = str('./brezo_related/data/') + str(leaking_node_id) + str('.dat')
+	# brezo_output = open(output_string, 'w')
+	# for line in brezo_lines:
+ #  		brezo_output.write("%s\n" % line)
 
-  	brezo_output.close()
+ #  	brezo_output.close()
 
 	###################################################################################################################
 	
@@ -289,16 +290,18 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 
 
 
-# NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df = parse_input("../Data/Net_0_0.inp")
+NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df = parse_input("../Data/final_input.inp")
 
-# node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/NetOut_0_0.txt", NUMBER_OF_ELEMENTS)
+node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,1)
 
 # unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
 
 # distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(3,unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
 
-
-
+print(node_first_time_store)
+print(node_second_time_store)
+print(link_first_time_store)
+print(link_second_time_store)
 
 
 

@@ -5,7 +5,7 @@ from numpy import inf
 from numpy import random
 import csv
 
-input_file = "../data/UCI_WSSC_Pressure_Zone_EPANET.inp"
+input_file = "../Data/final_input.inp"
 
 
 # function that returns the index of the next header to demarcate ending of current section in the file

@@ -301,8 +301,8 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 
 def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list):
 	mobile_node_index = unique_node_id.index(mobile_node_id)
-	mobile_traversal_array = [float('inf') for i in range(len(unique_node_id))]
-	mobile_traversal_array[mobile_node_index] = 1
+	mobile_traversal_array = [float(0) for i in range(len(unique_node_id))]
+	mobile_traversal_array[mobile_node_index] = float(1)
 
 	current_node_connections = isConnected_list[mobile_node_index]
 	if len(current_node_connections)!=0:
@@ -323,4 +323,4 @@ unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_
 
 mobile_traversal_array = mobileMatrixCreation("51956",unique_node_id,isConnected_list)
 
-
+print(mobile_traversal_array)

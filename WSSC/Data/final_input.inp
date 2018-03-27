@@ -673,7 +673,7 @@ Date: 8/16/2016 4:09:48 PM
 
 [EMITTERS]
 ;Junction        	Coefficient LeakStartAt
-52258 200 31
+52359 300 1
 
 [QUALITY]
 ;Node            	InitQual

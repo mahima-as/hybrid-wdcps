@@ -299,28 +299,29 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 
 
 
-def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list):
+def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list,connected_time):
 	mobile_node_index = unique_node_id.index(mobile_node_id)
-	mobile_traversal_array = [float(0) for i in range(len(unique_node_id))]
-	mobile_traversal_array[mobile_node_index] = float(1)
-
+	mobile_traversal_array = [float(0) for i in range(len(unique_node_id))]   # Set 0 since we are measuring probability of traversing to a downstream node - current node's own traversal is set to 0
+	mobile_traversal_time_array = [float('inf') for i in range(len(unique_node_id))]  # Corresponding time for the mobile sensor to traverse to a downstream node. Function of flow rates. 
+	
 	current_node_connections = isConnected_list[mobile_node_index]
+	current_node_connection_times = connected_time[mobile_node_index]
 	if len(current_node_connections)!=0:
 		for i in xrange(0,len(current_node_connections)):
 			connected_node_index = unique_node_id.index(current_node_connections[i])
 			mobile_traversal_array[connected_node_index] = float(1/len(current_node_connections))
-	return(mobile_traversal_array)
+			mobile_traversal_time_array[connected_node_index] = current_node_connection_times[i]
+	return(mobile_traversal_array,mobile_traversal_time_array)
 
 
 
-NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df = parse_input("../Data/final_input.inp")
+# NUMBER_OF_ELEMENTS,node_input_df,pipe_input_df = parse_input("../Data/final_input.inp")
 
-node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,1)
+# node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,1)
 
-unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
+# unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
 
 # distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(3,unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
 
-mobile_traversal_array = mobileMatrixCreation("51956",unique_node_id,isConnected_list)
+# mobile_traversal_array,mobile_traversal_time_array = mobileMatrixCreation("2",unique_node_id,isConnected_list,connected_time)
 
-print(mobile_traversal_array)

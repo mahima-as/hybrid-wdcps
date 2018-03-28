@@ -1,0 +1,17 @@
+ EPANET Example Network 1
+Network Table - Links at 7:00 Hrs
+                        	Flow            
+ Link ID                	GPM             
+Pipe 10                 	1811.87         
+Pipe 11                 	1040.76         
+Pipe 12                 	257.86          
+Pipe 21                 	81.13           
+Pipe 22                 	142.14          
+Pipe 31                 	49.98           
+Pipe 110                	-51.87          
+Pipe 111                	531.11          
+Pipe 112                	491.04          
+Pipe 113                	97.86           
+Pipe 121                	209.98          
+Pipe 122                	110.02          
+Pump 9                  	1811.87         

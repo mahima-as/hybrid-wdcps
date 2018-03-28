@@ -1,0 +1,15 @@
+ EPANET Example Network 1
+Network Table - Nodes at 7:00 Hrs
+                        	Demand          
+ Node ID                	GPM             
+Junc 10                 	0.00            
+Junc 11                 	240.00          
+Junc 12                 	240.00          
+Junc 13                 	160.00          
+Junc 21                 	240.00          
+Junc 22                 	320.00          
+Junc 23                 	240.00          
+Junc 31                 	160.00          
+Junc 32                 	160.00          
+Resvr 9                 	-1811.87        
+Tank 2                  	51.87           

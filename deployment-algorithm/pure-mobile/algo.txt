@@ -1,0 +1,14 @@
+Input 
+1. P: p_ij is the probability of mobile sensor moving from vertex i to vertex j through one edge
+2. Dc vector Dc_i is the minimum probability of covering vertex i.
+3. Impact vector Impact_i is the importance of covering vertex i. 
+
+Output:
+1. Insertion: Insertion_i is the number of sensors inserted at V_i. Initialized to 0
+
+Step 1: T = I + P + P^2 + ... P^k
+Step 2: N: N_ij = ln(1-Dc_j)/ln(1-T_ij)
+Step 3: G: G_ij = Nij/(sum_{k = 1...V}(1/Impact_k if 0 < N_ik <= N_ij)
+Step 4: Pick the least G_ij, such that N_ij + Sum(Insertion) < budget. Add N_ij to V_i. If none found, exit.
+Step 5: Set all N_ik = 0 where N_ik < N_ij
+Step 6: Go to Step 3

@@ -110,9 +110,11 @@ final_traversal_probability_matrix = final_mobile_deployment_matrix
 final_traversal_time_matrix = final_mobile_deployment_time_matrix
 
 while len(M[np.nonzero(M)]) > 0:			 # There exist non-zero elements
+	current_length = len(M[np.nonzero(M)])
 	M = np.dot(M,final_mobile_deployment_matrix)	
 	# M_time = np.dot(M_time,final_mobile_deployment_time_matrix)
-
+	if len(M[np.nonzero(M)]) == current_length:
+		break
 	final_traversal_probability_matrix = final_traversal_probability_matrix + M
 
 

@@ -67,9 +67,9 @@ for i in xrange(0,len(unique_node_list)):
 
 	unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
 
-	distance_array,demand_shortage_array,detection_time_array,detection_capability_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
+	distance_array,demand_shortage_array,detection_time_array,detection_capability_array,mobile_traversal_time_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
 
-	mobile_traversal_array,mobile_traversal_time_array = mobileMatrixCreation(unique_node_list[i],unique_node_list,isConnected_list,connected_time)
+	mobile_traversal_array = mobileMatrixCreation(unique_node_list[i],unique_node_list,isConnected_list,connected_time)
 
 	final_detection_time_matrix.append(detection_time_array)
 	final_distance_matrix.append(distance_array)
@@ -91,7 +91,7 @@ np.savetxt("../Output/distance.csv", final_distance_matrix, delimiter=",")
 np.savetxt("../Output/demandShortage.csv", final_demand_shortage_matrix, delimiter=",")
 np.savetxt("../Output/detectionCapability.csv", final_detection_capability_matrix, delimiter=",")
 np.savetxt("../Output/mobileDeployment.csv",final_mobile_deployment_matrix,delimiter=",")
-np.savetxt("../Output/mobileDeploymentTime.csv",final_mobile_deployment_time_matrix,delimiter=",")
+np.savetxt("../Output/traversalTime.csv",final_mobile_deployment_time_matrix,delimiter=",")
 
 # print final_detection_time_matrix
 # print final_detection_capability_matrix
@@ -110,10 +110,11 @@ final_traversal_probability_matrix = final_mobile_deployment_matrix
 final_traversal_time_matrix = final_mobile_deployment_time_matrix
 
 while len(M[np.nonzero(M)]) > 0:			 # There exist non-zero elements
-	print(M) 
+	current_length = len(M[np.nonzero(M)])
 	M = np.dot(M,final_mobile_deployment_matrix)	
 	# M_time = np.dot(M_time,final_mobile_deployment_time_matrix)
-
+	if len(M[np.nonzero(M)]) == current_length:
+		break
 	final_traversal_probability_matrix = final_traversal_probability_matrix + M
 
 
@@ -130,9 +131,11 @@ for i in xrange(0,len(unique_node_list)):
 	for j in xrange(0,len(unique_node_list)):
 		if final_traversal_probability_matrix[i][j] == 0:
 			traversal_capability_matrix[i][j] = 0
+		elif final_traversal_probability_matrix[i][j] == 1:
+			traversal_capability_matrix[i][j] = 1
 		else:
 			number_of_sensors = np.log(1 - REQUIRED_COVERAGE_PROBABILITY) / np.log(1 - final_traversal_probability_matrix[i][j])
 			traversal_capability_matrix[i][j] = max(final_traversal_probability_matrix[i][j],math.ceil(number_of_sensors))
 
-# print(traversal_capability_matrix)
 np.savetxt("../Output/traversalCapability.csv",traversal_capability_matrix,delimiter=",")
+

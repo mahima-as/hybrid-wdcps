@@ -72,7 +72,44 @@ def get_Badness_No_Impact (N, I):
 	
 
 def get_Badness_Harmonic_Impact (N, I):
+	num_vertices = len(P)
+	B = numpy.zeros(shape=(num_vertices, num_vertices))
+	for i in range(0, num_vertices):
+		for j in range(0, num_vertices):
+			if N[i][j] == float("inf"):
+				B[i][j] = float("inf")
+			else:
+				B[i][j] = float(N[i][j])/float(count_less_than(N[i], N[i][j]))
+				#### NEED TO UPDATE THIS PART.
 	return B
+	
+
+def pick_sensors(budget, N):
+	B = get_Badness_No_Impact(N, Impact)
+	print(B)
+	num_sensors = 0
+	num_vertices = len(B)
+	S = numpy.zeros(shape=(num_vertices))
+	while True:
+		minB, min_i, min_j = find_min_index(B)
+		print (minB, min_i, min_j)
+		min = N[min_i][min_j]
+		if num_sensors + min <= budget:
+			S[min_i] = S[min_i] + min
+			num_sensors = num_sensors + min
+			updates = [min_j]
+			for j in range(0, num_vertices):
+				if B[min_i][j] <= min:
+					B[min_i][j] = float("inf")
+					updates.append(j)
+			for update in updates:
+				for i in range(0, num_vertices):
+					B[i][update] = float("inf")
+		else:
+			S[min_i] = S[min_i] + budget - num_sensors
+			break
+	return S
+
 	
 network = read_EPANET_Input("", "Net1")
 network = read_EPANET_Flows (network, "", "Net1", "7")
@@ -83,10 +120,11 @@ print(T)
 Impact = read_vector_from_file("", "Net1_impact")
 N = get_N(T, Dc)
 print(N)
-B = get_Badness_No_Impact(N, Impact)
-print(B)
-budget = 5
 
-min, min_i, min_j = find_min_index(B)
-print (min, min_i, min_j)
+budget = 25
+
+S = pick_sensors(budget, N)
+print(S)
+
+
 

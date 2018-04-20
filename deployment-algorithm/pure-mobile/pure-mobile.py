@@ -2,7 +2,7 @@ import numpy
 import csv
 from collections import defaultdict
 from EPANET_input import read_EPANET_Input, read_EPANET_Flows
-from helpers import find, count_less_than, find_min_index
+from helpers import find, count_less_than, find_min_index, indices_less_than
 
 
 def read_vector_from_file (path, net_name):
@@ -79,32 +79,46 @@ def get_Badness_Harmonic_Impact (N, I):
 			if N[i][j] == float("inf"):
 				B[i][j] = float("inf")
 			else:
-				B[i][j] = float(N[i][j])/float(count_less_than(N[i], N[i][j]))
-				#### NEED TO UPDATE THIS PART.
+				indices = indices_less_than(N[i], N[i][j])
+				impact_total = 0
+				for index in indices:
+					impact_total = impact_total + 1/(1+I[index])
+				B[i][j] = float(N[i][j])/float(impact_total)
 	return B
 	
 
+def update_N (min, min_i, min_j, N):
+	num_vertices = len(N)
+	updates = indices_less_than(N[min_i], min)
+	for update in updates:
+		for i in range(0, num_vertices):
+			N[i][update] = float("inf")
+	for j in range(0, num_vertices):
+		if N[min_i][j] < min:
+			N[min_i][j] = float("inf")
+		elif not N[min_i][j] == float("inf"):
+			N[min_i][j] = N[min_i][j] - min
+	return N
+
+	
 def pick_sensors(budget, N):
-	B = get_Badness_No_Impact(N, Impact)
-	print(B)
 	num_sensors = 0
-	num_vertices = len(B)
+	num_vertices = len(N)
 	S = numpy.zeros(shape=(num_vertices))
 	while True:
+		B = get_Badness_Harmonic_Impact(N, Impact)
+		print("B is")
+		print(B)
+		print(N)
 		minB, min_i, min_j = find_min_index(B)
 		print (minB, min_i, min_j)
 		min = N[min_i][min_j]
+		if min == float("inf"):
+			break
 		if num_sensors + min <= budget:
 			S[min_i] = S[min_i] + min
 			num_sensors = num_sensors + min
-			updates = [min_j]
-			for j in range(0, num_vertices):
-				if B[min_i][j] <= min:
-					B[min_i][j] = float("inf")
-					updates.append(j)
-			for update in updates:
-				for i in range(0, num_vertices):
-					B[i][update] = float("inf")
+			N = update_N(min, min_i, min_j, N)
 		else:
 			S[min_i] = S[min_i] + budget - num_sensors
 			break
@@ -116,10 +130,8 @@ network = read_EPANET_Flows (network, "", "Net1", "7")
 P = get_P(network)
 T = get_T(P)
 Dc = read_vector_from_file("", "Net1_dc")
-print(T)
 Impact = read_vector_from_file("", "Net1_impact")
 N = get_N(T, Dc)
-print(N)
 
 budget = 25
 

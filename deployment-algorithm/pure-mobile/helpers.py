@@ -6,6 +6,7 @@ def find(lst, key, value):
         if dic[key] == value:
             return i
 
+
 def count_less_than(list, value):
 	count = 0
 	for element in list:
@@ -14,6 +15,16 @@ def count_less_than(list, value):
 	return count
 
 	
+def indices_less_than(list, value):
+	i = 0
+	indices = []
+	for element in list:
+		if element <= value:
+			indices.append(i)
+		i = i + 1
+	return indices
+
+
 def find_min_index(matrix):
 	min = matrix[0][0]
 	i = 0
@@ -26,7 +37,7 @@ def find_min_index(matrix):
 			if element < min:
 				min = element
 				min_i = i
-				min_j = 0
+				min_j = j
 			j = j+1
 		i = i+1
 	return min, min_i, min_j

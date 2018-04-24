@@ -47,8 +47,12 @@ def parse_input(input_file):
     # print(detectionTime)
     # print(impactMatrix)
     # print(triangle_score)
-    print traversalCapability
-    print traversalTime
+    # print traversalCapability[1]
+    # print len(traversalCapability[1])
+    # print traversalCapability[:,1]
+    # print len(traversalCapability[:,1])
+
+    # print traversalTime
     return(unique_node_id,detectionCapability,detectionTime,triangle_score,impactMatrix,detection_weight_number, traversalCapability, traversalTime)
 
 
@@ -84,7 +88,7 @@ def numberOfMobileSensors(unique_node_id,current_sensor_id,traversalCapability):
     return number_of_mobile_sensors
 
 def computeUtility(unique_node_id,current_sensor_id,detectionCapability,detectionTime,traversalCapability,traversalTime,impactMatrix,static_sensor_cost,mobile_sensor_cost,triangle_score,
-    mobile_sensor_deployment_set, shortest_detection_time_set):
+    mobile_sensor_deployment_set, shortest_detection_time_set,static_sensor_placed,mobile_sensor_placed):
     ''' Function that computes the utility score of adding a sensor. 
     Utility of adding a static sensor = Sum(Impact_ j / DetectionTime_ j) / CostofStatic , where j is iterated over the detectable leaks
     Utility of adding a mobile sensor = Sum(Impact_ j / DetectionTime_ j + TraversalTime_ j) / CostofMobile * Number of sensors , where j is iterated over the detectable leaks
@@ -99,19 +103,23 @@ def computeUtility(unique_node_id,current_sensor_id,detectionCapability,detectio
 
     traversal_times_of_current_sensor = traversalTime[current_sensor_index]
     traversal_times_of_current_sensor = traversal_times_of_current_sensor[nodes_detected_by_current_sensor]
+    shortest_detection_time_set = shortest_detection_time_set[nodes_detected_by_current_sensor]
 
-    final_static_utility_score = 0
+    final_static_utility_score = -1
+    final_mobile_utility_score = -1
 
-    for i in xrange(0,len(nodes_detected_by_current_sensor):
-        detected_node = nodes_detected_by_current_sensor[i]
-        detected_node_impact_score = float(computeTriangleImpactProduct(impactMatrix,triangle_score,detected_node))
-        if detection_times_of_current_sensor[i] != 0:
-            detected_node_impact_score = detected_node_impact_score / detection_times_of_current_sensor[i]
-        final_static_utility_score = final_utility_score + detected_node_impact_score
-        
-    final_static_utility_score = float(final_static_utility_score / static_sensor_cost)  # Utility of placing a static sensor
+    if current_sensor_id not in static_sensor_placed:
+        final_static_utility_score = 0
+        for i in xrange(0,len(nodes_detected_by_current_sensor)):
+            detected_node = nodes_detected_by_current_sensor[i]
+            detected_node_impact_score = float(computeTriangleImpactProduct(impactMatrix,triangle_score,detected_node))
+            if detection_times_of_current_sensor[i] != 0:
+                detected_node_impact_score = detected_node_impact_score / detection_times_of_current_sensor[i]
+            final_static_utility_score = final_static_utility_score + detected_node_impact_score
+            
+        final_static_utility_score = float(final_static_utility_score / static_sensor_cost)  # Utility of placing a static sensor
 
-    if current_sensor_id in mobile_sensor_deployment_set:
+    if current_sensor_id in mobile_sensor_deployment_set and current_sensor_id not in mobile_sensor_placed:
         final_mobile_utility_score = 0
         number_of_mobile_sensors = numberOfMobileSensors(unique_node_id,current_sensor_id,traversalCapability)
         for i in xrange(0,len(nodes_detected_by_current_sensor)):
@@ -123,9 +131,22 @@ def computeUtility(unique_node_id,current_sensor_id,detectionCapability,detectio
 
         final_mobile_utility_score = float(final_mobile_utility_score / (mobile_sensor_cost * number_of_mobile_sensors))
 
-    final_utility_score = max(final_mobile_utility_score,final_static_utility_score)
+    if final_static_utility_score == -1 and final_mobile_utility_score == -1:
+        final_utility_score = -100
+        final_node_result = 1
+        final_node_number = 0
+    elif final_static_utility_score > final_mobile_utility_score:
+        final_utility_score = final_static_utility_score
+        final_node_result = 1
+        final_node_number = 0
+    else:
+        final_utility_score = final_mobile_utility_score
+        final_node_result = 0
+        final_node_number = number_of_mobile_sensors
 
-    return final_utility_score
+
+
+    return final_utility_score, final_node_result, final_node_number
 
 def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversalCapability, traversalTime, impactMatrix, triangle_score):
     ''' Hybrid algorithm function that returns the final sensor placement locations. For mobile sensor locations it also returns
@@ -134,28 +155,96 @@ def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversa
 
     isCovered_list = [False] * len(unique_node_id)
     isCovered_list[0] = True
-    sensor_placed = []
-    
-    mobile_sensor_placed = [False] * len(unique_node_id)
-    static_sensor_placed = [False] * len(unique_node_id)
+    static_sensor_placed = []
+    mobile_sensor_placed = []
+    mobile_number_deployed = []
+
+    mobile_sensor_deployment_set = []
+
+    BUDGET = 100000
+    static_sensor_cost = 1
+    mobile_sensor_cost = 1
 
     uncovered_indices = [index for index,v in enumerate(isCovered_list) if v == False]
     node_shortest_detection_time_list = [float("inf")] * len(unique_node_id)
+    node_shortest_detection_time_list = np.asarray(node_shortest_detection_time_list,dtype=np.float32)
 
-    while len(uncovered_indices) > 0:
+    while BUDGET > 0 and len(uncovered_indices) > 0: # Stopping conditions are that either budget is exhausted or network has been covered
         print len(uncovered_indices)
         utility_score = []
+        result_flag = []
+        deployed_number = []
         for i in xrange(0,len(unique_node_id)):
-            if mobile_sensor_placed[i] == True and static_sensor_placed[i] == True:
-                utility_score.append(-1)
-                continue
+            # print i
+            current_node_utility, current_node_result, current_node_number = computeUtility(unique_node_id,unique_node_id[i],detectionCapability,detectionTime,
+                traversalCapability,traversalTime,impactMatrix,static_sensor_cost,mobile_sensor_cost,triangle_score,mobile_sensor_deployment_set,
+                node_shortest_detection_time_list, static_sensor_placed,mobile_sensor_placed)
+            # if isCovered_list[i] == True:
+            #     current_node_utility = -100
+            #     current_node_result = 1
+            #     current_node_number = 0
+            utility_score.append(current_node_utility)
+            result_flag.append(current_node_result)
+            deployed_number.append(current_node_number)
+
+        max_utility = max(utility_score)
+        max_utility_index = utility_score.index(max_utility) # Get the first index of the junction with max utility
+
+        if result_flag[max_utility_index] == 1:  # If the max utility is to place a static sensor
+            static_sensor_placed.append(unique_node_id[max_utility_index])
+            
+            BUDGET = BUDGET - static_sensor_cost
+
+            nodes_detected_by_max_utility = detectionCapability[max_utility_index]
+            nodes_detected_by_max_utility = [j for j,v in enumerate(nodes_detected_by_max_utility) if v == 1]
+            detection_times_of_max_utility = detectionTime[max_utility_index]
+
+            for node in nodes_detected_by_max_utility:
+                isCovered_list[node] = True
+                node_shortest_detection_time_list[node] = min(node_shortest_detection_time_list[node],detection_times_of_max_utility[node])
+            isCovered_list[max_utility_index] = True #Setting current placed point = true
 
 
+            # Once a static sensor has been placed, it is capable of detecting leaks at a subset of locations 
+            # The mobile sensors capable of traversing to those locations can thus be unlocked 
+
+            for node in nodes_detected_by_max_utility: # Need to add the unlocked mobile sensor information to the deployment set
+                traversal_column = traversalCapability[:,node]
+                required_mobile_rows = [j for j,v in enumerate(traversal_column) if v > 0]
+                for mobile_row in required_mobile_rows:
+                    mobile_sensor_deployment_set.append(unique_node_id[mobile_row])
+            print "Placed static at " , max_utility_index
 
 
+        if result_flag[max_utility_index] == 0:
+            mobile_sensor_placed.append(unique_node_id[max_utility_index])
+            mobile_number_deployed.append(deployed_number[max_utility_index])
+
+            BUDGET = BUDGET - (deployed_number[max_utility_index] * mobile_sensor_cost)
+
+            nodes_detected_by_max_utility = detectionCapability[max_utility_index]
+            nodes_detected_by_max_utility = [j for j,v in enumerate(nodes_detected_by_max_utility) if v == 1]
+            detection_times_of_max_utility = detectionTime[max_utility_index]
+
+            for node in nodes_detected_by_max_utility:
+                isCovered_list[node] = True
+                # node_shortest_detection_time_list[node] = min(node_shortest_detection_time_list[node],detection_times_of_max_utility[node])
+            isCovered_list[max_utility_index] = True #Setting current placed point = true 
+
+            print "placed mobile at", max_utility_index
+
+        uncovered_indices = [index for index,v in enumerate(isCovered_list) if v == False]           
+
+    return mobile_sensor_placed,static_sensor_placed,isCovered_list
 
 if __name__ == "__main__":
     input_file = "../Data/final_input.inp"
     unique_node_id, detectionCapability, detectionTime, triangle_score, impactMatrix, detection_weight_number, traversalCapability, traversalTime = parse_input(input_file)
 
-    # Need to define a total budget
+    mobile_sensor_placed,static_sensor_placed,isCovered_list = hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversalCapability, traversalTime, impactMatrix, triangle_score)
+    print mobile_sensor_placed
+    print len(mobile_sensor_placed)
+    print static_sensor_placed
+    print len(static_sensor_placed)
+    print isCovered_list
+    

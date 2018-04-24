@@ -112,6 +112,9 @@ def computeUtility(unique_node_id,current_sensor_id,detectionCapability,detectio
         final_static_utility_score = 0
         for i in xrange(0,len(nodes_detected_by_current_sensor)):
             detected_node = nodes_detected_by_current_sensor[i]
+            # Only consider if it can detect leaks faster than existing placed nodes 
+            if detection_times_of_current_sensor[i] >= shortest_detection_time_set[i]:
+                continue
             detected_node_impact_score = float(computeTriangleImpactProduct(impactMatrix,triangle_score,detected_node))
             if detection_times_of_current_sensor[i] != 0:
                 detected_node_impact_score = detected_node_impact_score / detection_times_of_current_sensor[i]
@@ -124,8 +127,13 @@ def computeUtility(unique_node_id,current_sensor_id,detectionCapability,detectio
         number_of_mobile_sensors = numberOfMobileSensors(unique_node_id,current_sensor_id,traversalCapability)
         for i in xrange(0,len(nodes_detected_by_current_sensor)):
             detected_node = nodes_detected_by_current_sensor[i]
+            # Only consider if it can detect leaks faster than existing placed nodes 
+            if detection_times_of_current_sensor[i] >= shortest_detection_time_set[i]:
+                continue
             detected_node_impact_score = float(computeTriangleImpactProduct(impactMatrix,triangle_score,detected_node))
             mobile_sensor_total_time = traversal_times_of_current_sensor[i] + shortest_detection_time_set[i]  # Check this part
+            if mobile_sensor_total_time == 0:
+                continue
             detected_node_impact_score = detected_node_impact_score / mobile_sensor_total_time
             final_mobile_utility_score = final_mobile_utility_score + detected_node_impact_score
 
@@ -154,7 +162,6 @@ def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversa
 
 
     isCovered_list = [False] * len(unique_node_id)
-    isCovered_list[0] = True
     static_sensor_placed = []
     mobile_sensor_placed = []
     mobile_number_deployed = []
@@ -162,8 +169,8 @@ def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversa
     mobile_sensor_deployment_set = []
 
     BUDGET = 100000
-    static_sensor_cost = 1
-    mobile_sensor_cost = 1
+    static_sensor_cost = 30
+    mobile_sensor_cost = 5
 
     uncovered_indices = [index for index,v in enumerate(isCovered_list) if v == False]
     node_shortest_detection_time_list = [float("inf")] * len(unique_node_id)
@@ -179,6 +186,11 @@ def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversa
             current_node_utility, current_node_result, current_node_number = computeUtility(unique_node_id,unique_node_id[i],detectionCapability,detectionTime,
                 traversalCapability,traversalTime,impactMatrix,static_sensor_cost,mobile_sensor_cost,triangle_score,mobile_sensor_deployment_set,
                 node_shortest_detection_time_list, static_sensor_placed,mobile_sensor_placed)
+            
+            nodes_detected_by_current_sensor = detectionCapability[i]
+            nodes_detected_by_current_sensor = [j for j,v in enumerate(nodes_detected_by_current_sensor) if v == 1]
+            unique_detection_score = len([x for x in nodes_detected_by_current_sensor if isCovered_list[x] == False])
+            current_node_utility = current_node_utility + unique_detection_score
             # if isCovered_list[i] == True:
             #     current_node_utility = -100
             #     current_node_result = 1
@@ -188,6 +200,7 @@ def hybridAlgorithm(unique_node_id, detectionCapability, detectionTime, traversa
             deployed_number.append(current_node_number)
 
         max_utility = max(utility_score)
+        print "Max utility score", max_utility
         max_utility_index = utility_score.index(max_utility) # Get the first index of the junction with max utility
 
         if result_flag[max_utility_index] == 1:  # If the max utility is to place a static sensor

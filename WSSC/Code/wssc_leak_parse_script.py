@@ -200,6 +200,8 @@ def isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_ti
 	connected_distance = list()
 	connected_velocity = list()
 	connected_time = list()
+	static_burst_time = list()
+	flow = list()
 
 	for i in xrange(0,len(unique_node_id)):
 		current_node = unique_node_id[i]
@@ -210,6 +212,8 @@ def isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_ti
 		current_node_velocity = list()	#initializing list to store velocity of pipe between the current node and this node
 		current_node_time = list()		#initializing list to store the propagation time between current node and this node
 
+		current_node_static_burst_time = list()
+		current_node_flow = list()
 		for j in xrange(0,len(current_node_rows)):
 			row_number = current_node_rows[j]
 			temp_node = pipe_input_df['node2'][row_number]	#computing node connection info
@@ -220,34 +224,41 @@ def isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_ti
 			temp_pipe = pipe_input_df['pipe_id'][row_number]	#computing node pipe info
 			pipe_row_number = link_second_time_store[link_second_time_store['pipe_id'] == temp_pipe].index.tolist()
 			temp_velocity = link_second_time_store['velocity'][pipe_row_number[0]]
-			
+
+			temp_flow = link_second_time_store['flow'][pipe_row_number[0]]
+			# if temp_flow < 0:
+			# 	temp_flow = 0.0
+
 			if temp_velocity == 0:
 				temp_velocity = 0.1
 			if temp_velocity != 0:
 				temp_time = temp_distance/temp_velocity
 				temp_time = int(math.ceil(temp_time))
 			
-
+			temp_static_burst_time = temp_distance / 0.6  # 600 m/s [perelman paper] converted to km/s (check)
 
 			current_node_list.insert(len(current_node_list),temp_node)
 			current_node_distance.insert(len(current_node_distance),temp_distance)
 			current_node_velocity.insert(len(current_node_velocity),temp_velocity)
 			current_node_time.insert(len(current_node_time),temp_time)
-		
+			current_node_static_burst_time.insert(len(current_node_static_burst_time),temp_static_burst_time)
+			current_node_flow.insert(len(current_node_flow),temp_flow)
+
 		isConnected_list.append(current_node_list)
 		connected_distance.append(current_node_distance)
 		connected_velocity.append(current_node_velocity)
 		connected_time.append(current_node_time)
-
+		static_burst_time.append(current_node_static_burst_time)
+		flow.append(current_node_flow)
 	# unique_node_id returns the unique node id's
 	# isConnected_list returns the node id's that the current node index is connected to (in the direction of flow)
 	# connected_distance/velocity/time is the corresponding distance, velocity and time 
 
-	return(unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time)
+	return(unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow)
 
 
 
-def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store):
+def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow,node_first_time_store,node_second_time_store):
 	leaking_node_index = unique_node_id.index(leaking_node_id)
 	
 	distance_array = [float('inf') for i in range(len(unique_node_id))]
@@ -291,7 +302,7 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 				demand_shortage_array[current_node_index] = min(demand_shortage,demand_shortage_array[current_node_index])
 
 				distance_array[current_node_index] = min(connected_distance[parent_node_index][j] + distance_array[parent_node_index],distance_array[current_node_index])
-				detection_time_array[current_node_index] = min(connected_time[parent_node_index][j] + detection_time_array[parent_node_index], detection_time_array[current_node_index])
+				detection_time_array[current_node_index] = min(static_burst_time[parent_node_index][j] + detection_time_array[parent_node_index], detection_time_array[current_node_index])
 				detection_capability_array[current_node_index] = 1
 	
 	# This part is for computing the mobile traversal time using DFS
@@ -319,17 +330,47 @@ def leakMatrixCreation(leaking_node_id,unique_node_id,isConnected_list,connected
 	return(distance_array,demand_shortage_array,detection_time_array,detection_capability_array,mobile_traversal_time_array)
 
 
+def flowMatrixCreation(unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow,node_first_time_store,node_second_time_store):
 
-def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list,connected_time):
+	flowMatrix = [[0 for i in range(len(unique_node_id))] for j in range(len(unique_node_id))]
+
+	for i in xrange(0,len(unique_node_id)):
+		mobile_node_index = i
+		mobile_traversal_array = [float(0) for i in range(len(unique_node_id))]   # Set 0 since we are measuring probability of traversing to a downstream node - current node's own traversal is set to 0
+		current_node_connections = isConnected_list[mobile_node_index]
+		current_node_flow = flow[mobile_node_index]
+		if len(current_node_flow)==0:
+			continue
+		# current_node_flow_sum = 0
+		
+		# for j in xrange(0,len(current_node_flow)):
+		# 	if current_node_flow[j] >= 0:
+		# 		current_node_flow_sum = current_node_flow_sum + current_node_flow[j]
+		if len(current_node_connections)!=0:
+			for j in xrange(0,len(current_node_connections)):
+				connected_node_index = unique_node_id.index(current_node_connections[j])
+				if current_node_flow[j] >= 0:
+					flowMatrix[mobile_node_index][connected_node_index] = current_node_flow[j]
+				elif current_node_flow[j] < 0:
+					flowMatrix[connected_node_index][mobile_node_index] = abs(current_node_flow[j])
+	return(flowMatrix)
+
+def mobileMatrixCreation(mobile_node_id,unique_node_id,isConnected_list,connected_time,flowMatrix):
 	mobile_node_index = unique_node_id.index(mobile_node_id)
 	mobile_traversal_array = [float(0) for i in range(len(unique_node_id))]   # Set 0 since we are measuring probability of traversing to a downstream node - current node's own traversal is set to 0
 	
 	current_node_connections = isConnected_list[mobile_node_index]
 	current_node_connection_times = connected_time[mobile_node_index]
+
+	current_node_flow = flowMatrix[mobile_node_index]
+
+	if sum(current_node_flow) <= 0:
+		return(mobile_traversal_array)
+
 	if len(current_node_connections)!=0:
 		for i in xrange(0,len(current_node_connections)):
 			connected_node_index = unique_node_id.index(current_node_connections[i])
-			mobile_traversal_array[connected_node_index] = float(1/len(current_node_connections))
+			mobile_traversal_array[connected_node_index] = float(current_node_flow[connected_node_index] / sum(current_node_flow))
 	return(mobile_traversal_array)
 
 

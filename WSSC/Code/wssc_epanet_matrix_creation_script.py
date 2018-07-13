@@ -4,7 +4,7 @@ from random import randint
 import math
 import numpy as np
 from epanet_call import epanet_call
-from wssc_leak_parse_script import parse_input,parse_output,isConnected,leakMatrixCreation,mobileMatrixCreation
+from wssc_leak_parse_script import parse_input,parse_output,isConnected,leakMatrixCreation,mobileMatrixCreation,flowMatrixCreation
 
 file_path = "../Data/final_input.inp"
 output_file_path = "../Data/final_output.txt"
@@ -64,11 +64,13 @@ for i in xrange(0,len(unique_node_list)):
 
 	node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store = parse_output("../Data/final_output.txt", NUMBER_OF_ELEMENTS,unique_node_list[i])
 
-	unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
+	unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow = isConnected(node_input_df,pipe_input_df,node_first_time_store,node_second_time_store,link_first_time_store,link_second_time_store)
 
-	distance_array,demand_shortage_array,detection_time_array,detection_capability_array,mobile_traversal_time_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,node_first_time_store,node_second_time_store)
+	distance_array,demand_shortage_array,detection_time_array,detection_capability_array,mobile_traversal_time_array = leakMatrixCreation(unique_node_list[i],unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow,node_first_time_store,node_second_time_store)
 
-	mobile_traversal_array = mobileMatrixCreation(unique_node_list[i],unique_node_list,isConnected_list,connected_time)
+	flowMatrix = flowMatrixCreation(unique_node_id,isConnected_list,connected_distance,connected_velocity,connected_time,static_burst_time,flow,node_first_time_store,node_second_time_store)
+
+	mobile_traversal_array = mobileMatrixCreation(unique_node_list[i],unique_node_list,isConnected_list,connected_time,flowMatrix)
 
 	final_detection_time_matrix.append(detection_time_array)
 	final_distance_matrix.append(distance_array)

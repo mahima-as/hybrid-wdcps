@@ -1,0 +1,19 @@
+
+#Ignore all output folders. Too big for github
+
+/Leak/WSSC/Output/
+/Leak/Richmond/Output/
+/Leak/Colorado/Output/
+/Leak/Colorado/Output/mobileDeployment.csv
+/Contamination/WSSC/Output/
+/Contamination/Richmond/Output/
+/Contamination/Colorado/Output/
+/Colorado/Output/
+#Ignore all leak.r files 
+
+/Leak/WSSC/Code/leak.r
+/Leak/Richmond/Code/leak.r
+/Leak/Colorado/Code/leak.r
+/Contamination/WSSC/Code/leak.r
+/Contamination/Richmond/Code/leak.r
+/Contamination/Colorado/Code/leak.r

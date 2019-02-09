@@ -238,11 +238,16 @@ uncovered_indices = which(isCovered_list == FALSE)
 sensor_order = unique_node_id # Setting initial order to be the original node order
 
 BUDGET = 100000
-static_sensor_cost = 40
-mobile_sensor_cost = 5
+static_sensor_cost = 5
+mobile_sensor_cost = 1
 
 counter = 0
 old_utility_score = c()
+
+
+budget_expt_sensor_order = c()
+budget_expt_sensor_number = c()
+budget_expt_unique_covered = c()
 
 while(BUDGET > 0 && length(uncovered_indices)>0)
 {
@@ -362,6 +367,13 @@ while(BUDGET > 0 && length(uncovered_indices)>0)
 	}
 	uncovered_indices = which(isCovered_list == FALSE)
 
+	budget_expt_sensor_order = c(budget_expt_sensor_order,sensor_order[index_to_place_sensor])
+	if(node_result_of_sensor_to_be_placed == 1)
+		budget_expt_sensor_number = c(budget_expt_sensor_number,1)
+	if(node_result_of_sensor_to_be_placed == 0)
+		budget_expt_sensor_number = c(budget_expt_sensor_number,node_number_of_sensor_to_be_placed)
+
+	budget_expt_unique_covered = c(budget_expt_unique_covered,length(which(isCovered_list == TRUE)))
 	# sorting_df = as.data.frame(cbind(utility_score,sensor_order,unique_detection_store))
 	# colnames(sorting_df) = NULL
 	# sorting_df[,1] = as.numeric(as.character(sorting_df[,1]))
@@ -404,8 +416,10 @@ print(length(static_sensor_placed))
 print(length(mobile_sensor_placed))
 print(mobile_number_deployed)
 
-
-write.table(static_sensor_placed, file = "./sensorLocations/static_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
-write.table(mobile_sensor_placed, file = "./sensorLocations/mobile_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
-write.table(mobile_number_deployed, file = "./sensorLocations/mobile_number_deployed.csv",row.names=FALSE, col.names=FALSE, sep=",")
-print(length(which(isCovered_list==FALSE)))
+budget_expt_df = data.frame(budget_expt_sensor_order,budget_expt_sensor_number,budget_expt_unique_covered)
+colnames(budget_expt_df) = c("sensorName","sensor#","eventsCovered")
+write.table(budget_expt_df,file="./budgetExpt/hybrid_impact_results.csv",row.names=FALSE,col.names = FALSE,sep=",")
+# write.table(static_sensor_placed, file = "./sensorLocations/static_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
+# write.table(mobile_sensor_placed, file = "./sensorLocations/mobile_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
+# write.table(mobile_number_deployed, file = "./sensorLocations/mobile_number_deployed.csv",row.names=FALSE, col.names=FALSE, sep=",")
+# print(length(which(isCovered_list==FALSE)))

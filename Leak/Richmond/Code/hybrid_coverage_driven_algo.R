@@ -282,26 +282,47 @@ while(BUDGET > 0 && length(uncovered_indices)>0)
 	{
 		# print("I VALUE")
 		# print(i)
-		utility_vector = computeUtility(unique_node_id,sensor_order[i],detectionCapability,detectionTime,traversalCapability,traversalTime,
-			impactMatrix,static_sensor_cost,mobile_sensor_cost,triangle_score,mobile_sensor_deployment_set,node_shortest_detection_time_set,
-			static_sensor_placed,mobile_sensor_placed)
+		# utility_vector = computeUtility(unique_node_id,sensor_order[i],detectionCapability,detectionTime,traversalCapability,traversalTime,
+		# 	impactMatrix,static_sensor_cost,mobile_sensor_cost,triangle_score,mobile_sensor_deployment_set,node_shortest_detection_time_set,
+		# 	static_sensor_placed,mobile_sensor_placed)
 
-		current_node_utility = utility_vector[1] # Utility of placing sensor at current node
-		current_node_result = utility_vector[2]	# Type of sensor placed to get that utility - mobile or static (0,1)
-		current_node_number = utility_vector[3] # If mobile, number of sensors to be placed
+		# current_node_utility = utility_vector[1] # Utility of placing sensor at current node
+		# current_node_result = utility_vector[2]	# Type of sensor placed to get that utility - mobile or static (0,1)
+		# current_node_number = utility_vector[3] # If mobile, number of sensors to be placed
 
 		current_index = which(unique_node_id==sensor_order[i])
 
 		nodes_detected_by_current_sensor = detectionCapability[current_index,]
 		nodes_detected_by_current_sensor = which(nodes_detected_by_current_sensor == 1)
 
-		unique_detection_score = length(which(isCovered_list[nodes_detected_by_current_sensor] == FALSE))
+		nodes_traversed_by_current_sensor = traversalCapability[current_index,]
+		nodes_traversed_by_current_sensor = which(nodes_traversed_by_current_sensor == 1)
+
+		static_score = length(which(isCovered_list[nodes_detected_by_current_sensor] == FALSE))
+		mobile_score = length(which(isCovered_list[nodes_traversed_by_current_sensor] == FALSE))
+
+		if(mobile_score >= static_score)
+		{
+			unique_detection_score = mobile_score
+			current_node_result = 0
+			current_node_number = numberOfMobileSensors(unique_node_id,sensor_order[i],traversalCapability)
+		}
+
+		if(static_score > mobile_score)
+		{
+			unique_detection_score = static_score
+			current_node_result = 1
+			current_node_number = numberOfMobileSensors(unique_node_id,sensor_order[i],traversalCapability)
+		}
+
+		# unique_detection_score = length(which(isCovered_list[nodes_detected_by_current_sensor] == FALSE))
 		# print("SCORES")
 		# print(utility_vector)
 		# print(unique_detection_score)
 		# print(current_node_utility)
 		# print(current_node_result)
-		node_utility_score = as.numeric(unique_detection_score) + as.numeric(current_node_utility)
+		# node_utility_score = as.numeric(unique_detection_score) + as.numeric(current_node_utility)
+		node_utility_score = as.numeric(unique_detection_score)
 		if(unique_detection_score == 0)
 			node_utility_score = -100
 		unique_detection_store = c(unique_detection_store,unique_detection_score)
@@ -386,13 +407,12 @@ while(BUDGET > 0 && length(uncovered_indices)>0)
 
 		current_node_index = which(unique_node_id == sensor_order[index_to_place_sensor])
 		# nodes_detected_by_max_utility = which(traversalCapability[current_node_index,]==1)
-		nodes_detected_by_max_utility = which(detectionCapability[current_node_index,]==1)
+		nodes_detected_by_max_utility = which(traversalCapability[current_node_index,]==1)
 		isCovered_list[nodes_detected_by_max_utility] = TRUE
 		isCovered_list[current_node_index] = TRUE
 		# cat("Placed mobile at ",current_node_index,"\n")
 	}
 	uncovered_indices = which(isCovered_list == FALSE)
-
 	budget_expt_sensor_order = c(budget_expt_sensor_order,sensor_order[index_to_place_sensor])
 	if(node_result_of_sensor_to_be_placed == 1)
 		budget_expt_sensor_number = c(budget_expt_sensor_number,1)
@@ -400,6 +420,7 @@ while(BUDGET > 0 && length(uncovered_indices)>0)
 		budget_expt_sensor_number = c(budget_expt_sensor_number,0)
 
 	budget_expt_unique_covered = c(budget_expt_unique_covered,length(which(isCovered_list == TRUE)))
+
 	# sorting_df = as.data.frame(cbind(utility_score,sensor_order,unique_detection_store))
 	# colnames(sorting_df) = NULL
 	# sorting_df[,1] = as.numeric(as.character(sorting_df[,1]))
@@ -444,8 +465,9 @@ print(mobile_number_deployed)
 
 budget_expt_df = data.frame(budget_expt_sensor_order,budget_expt_sensor_number,budget_expt_unique_covered)
 colnames(budget_expt_df) = c("sensorName","sensor#","eventsCovered")
-write.table(budget_expt_df,file="./budgetExpt/hybrid_impact_results.csv",row.names=FALSE,col.names = FALSE,sep=",")
-# write.table(static_sensor_placed, file = "./sensorLocations/static_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
-# write.table(mobile_sensor_placed, file = "./sensorLocations/mobile_sensor_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
-# write.table(mobile_number_deployed, file = "./sensorLocations/mobile_number_deployed.csv",row.names=FALSE, col.names=FALSE, sep=",")
+write.table(budget_expt_df,file="./budgetExpt/hybrid_coverage_results.csv",row.names=FALSE,col.names = FALSE,sep=",")
+
+# write.table(static_sensor_placed, file = "./sensorLocations/hybrid_coverage_driven_static_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
+# write.table(mobile_sensor_placed, file = "./sensorLocations/hybrid_coverage_driven_mobile_locations.csv",row.names=FALSE, col.names=FALSE, sep=",")
+# write.table(mobile_number_deployed, file = "./sensorLocations/hybrid_coverage_driven_mobile_deployed.csv",row.names=FALSE, col.names=FALSE, sep=",")
 # print(length(which(isCovered_list==FALSE)))

@@ -60,16 +60,16 @@ detectionTimeArray = detectionTimeArray[which(is.finite(detectionTimeArray) & de
 
 detectionTime = as.matrix(detectionTime)
 class(detectionTime) = "numeric"
-for(i in 1:length(detectionTime[,1]))
-{
-	current_row = detectionTime[i,]
-	indices = which(is.finite(current_row) & current_row!=0)
-	for(j in 1:length(indices))
-	{
-		current_row[indices[j]] = (current_row[indices[j]] - min(detectionTimeArray)) / (max(detectionTimeArray) - min(detectionTimeArray))
-	}
-	detectionTime[i,] = current_row
-}
+# for(i in 1:length(detectionTime[,1]))
+# {
+# 	current_row = detectionTime[i,]
+# 	indices = which(is.finite(current_row) & current_row!=0)
+# 	for(j in 1:length(indices))
+# 	{
+# 		current_row[indices[j]] = (current_row[indices[j]] - min(detectionTimeArray)) / (max(detectionTimeArray) - min(detectionTimeArray))
+# 	}
+# 	detectionTime[i,] = current_row
+# }
 
 
 isCovered_list = rep(FALSE,length(unique_node_id))

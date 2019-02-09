@@ -90,6 +90,10 @@ shortest_detection_time = rep(Inf,length(unique_node_id))
 
 start.time <- Sys.time()
 
+budget_expt_sensor_order = c()
+budget_expt_sensor_number = c()
+budget_expt_unique_covered = c()
+
 while(length(uncovered_indices) > 0)
 # for(q in 1:1)
 {
@@ -194,6 +198,9 @@ while(length(uncovered_indices) > 0)
 	isPlaced_list[current_index] = TRUE
 	uncovered_indices = which(isCovered_list == FALSE)
 
+	budget_expt_sensor_order = c(budget_expt_sensor_order,sensor_order[index_to_place_sensor])
+	budget_expt_unique_covered = c(budget_expt_unique_covered,length(which(isCovered_list==TRUE)))
+
 	sorting_df = as.data.frame(cbind(utility_score,sensor_order,unique_detection_store))
 	colnames(sorting_df) = NULL
 	sorting_df[,1] = as.numeric(as.character(sorting_df[,1]))
@@ -233,5 +240,8 @@ end.time <- Sys.time()
 time.taken <- end.time - start.time
 print(time.taken)
 
-write.table(sensor_placed, file = "./sensorLocations/pure_static_impact_driven.csv",row.names=FALSE, col.names=FALSE, sep=",")
+budget_expt_df = data.frame(budget_expt_sensor_order,budget_expt_unique_covered)
+colnames(budget_expt_df) = c("sensorName","eventsCovered")
+write.table(budget_expt_df,file="./budgetExpt/pure_static_impact_results.csv",row.names=FALSE,col.names = FALSE,sep=",")
+# write.table(sensor_placed, file = "./sensorLocations/pure_static_impact_driven.csv",row.names=FALSE, col.names=FALSE, sep=",")
 print("finished")

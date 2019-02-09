@@ -86,6 +86,10 @@ shortest_detection_time = rep(Inf,length(unique_node_id))
 
 start.time <- Sys.time()
 
+budget_expt_sensor_order = c()
+budget_expt_sensor_number = c()
+budget_expt_unique_covered = c()
+
 while(length(uncovered_indices) > 0)
 # for(q in 1:1)
 {
@@ -97,7 +101,6 @@ while(length(uncovered_indices) > 0)
 	total_score_store = c()
 	unique_detection_store = c()
 	print(length(uncovered_indices))
-
 
 	# for(p in 1:length(sensor_order))
 	# {
@@ -128,17 +131,18 @@ while(length(uncovered_indices) > 0)
 		nodes_detected_by_current = nodes_detected_by_current[required_indices]
 		detection_times_of_current = detection_times_of_current[required_indices]
 
+
 		second_score = 0
 		if(length(nodes_detected_by_current)>0)
 		{
-		for(j in 1:length(nodes_detected_by_current))
-		{
-			temp_node = nodes_detected_by_current[j]
-			temp_score = computeTriangleImpactProduct(impactMatrix,triangle_score,temp_node)
-			# print(temp_score)
-			# print(detection_times_of_current[j])
-			second_score = as.numeric(second_score + as.numeric(temp_score * detection_times_of_current[j]))
-		}
+			for(j in 1:length(nodes_detected_by_current))
+			{
+				temp_node = nodes_detected_by_current[j]
+				temp_score = computeTriangleImpactProduct(impactMatrix,triangle_score,temp_node)
+				# print(temp_score)
+				# print(detection_times_of_current[j])
+				second_score = as.numeric(second_score + as.numeric(temp_score * detection_times_of_current[j]))
+			}
 		}
 		current_detection = which(detectionCapability[current_index,]==1)
 		unique_detection_score = length(which(isCovered_list[current_detection]==FALSE))
@@ -146,7 +150,7 @@ while(length(uncovered_indices) > 0)
 		
 		# detection_capability_score = as.numeric(unique_detection_score * (length(which(isCovered_list==FALSE)) - unique_detection_score))
 		# detection_capability_score = (detection_weight_number[current_index] - min(detection_weight_number)) / (max(detection_weight_number) - min(detection_weight_number))
-		# unique_detection_score = unique_detection_store[i]
+		
 		detection_capability_score = unique_detection_score
 		# detection_capability_score = unique_detection_store[i]
 
@@ -162,30 +166,22 @@ while(length(uncovered_indices) > 0)
 		{
 			if(unique_detection_score < F_utility_score[i-1])
 			{
-				for(j in i:length(sensor_order))
-				{
-					# if(isPlaced_list[j] == FALSE)
-						utility_score = c(utility_score,0)
-				}
+				# for(j in i:length(sensor_order))
+				# {
+				# 	# if(isPlaced_list[j] == FALSE)
+				# 		utility_score = c(utility_score,0)
+				# }
+				utility_score = c(utility_score,rep(0,(length(sensor_order)- i + 1)))
 				break
 			}
 		}
 
 		utility_score = c(utility_score,as.numeric(total_score))
 	}
-	# print("unique detection score")
-	# print(unique_detection_store)
-	if(max(unique_detection_store)>2)
-	{	
-		print(">1")
+	if(max(unique_detection_store)>1)
 		index_to_place_sensor = which(utility_score == max(utility_score))
-	}
-	if(max(unique_detection_store)<=2)
-	{
-		print("==1")
+	if(max(unique_detection_store)<=1)
 		index_to_place_sensor = which(unique_detection_store == max(unique_detection_store))
-	}
-	
 	if(length(index_to_place_sensor) > 1)
 		index_to_place_sensor = index_to_place_sensor[1]
 	# print(utility_score)
@@ -197,6 +193,9 @@ while(length(uncovered_indices) > 0)
 	isCovered_list[current_index] = TRUE
 	isPlaced_list[current_index] = TRUE
 	uncovered_indices = which(isCovered_list == FALSE)
+
+	budget_expt_sensor_order = c(budget_expt_sensor_order,sensor_order[index_to_place_sensor])
+	budget_expt_unique_covered = c(budget_expt_unique_covered,length(which(isCovered_list==TRUE)))
 
 	sorting_df = as.data.frame(cbind(utility_score,sensor_order,unique_detection_store))
 	colnames(sorting_df) = NULL
@@ -211,7 +210,6 @@ while(length(uncovered_indices) > 0)
 	}
 	if(max(unique_detection_store)<=1)
 	{
-		# print(unique_detection_store)
 		sorting_df = sorting_df[-index_to_place_sensor,]
 		sorting_df = sorting_df[order(-sorting_df[,3])]
 	}
@@ -237,6 +235,8 @@ print(length(unique(sensor_placed)))
 end.time <- Sys.time()
 time.taken <- end.time - start.time
 print(time.taken)
-
-write.table(sensor_placed, file = "./sensorLocations/pure_static_impact_driven.csv",row.names=FALSE, col.names=FALSE, sep=",")
+budget_expt_df = data.frame(budget_expt_sensor_order,budget_expt_unique_covered)
+colnames(budget_expt_df) = c("sensorName","eventsCovered")
+write.table(budget_expt_df,file="./budgetExpt/pure_static_impact_results.csv",row.names=FALSE,col.names = FALSE,sep=",")
+# write.table(sensor_placed, file = "./sensorLocations/pure_static_impact_driven.csv",row.names=FALSE, col.names=FALSE, sep=",")
 print("finished")

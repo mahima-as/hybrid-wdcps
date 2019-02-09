@@ -17,3 +17,6 @@
 /Contamination/WSSC/Code/leak.r
 /Contamination/Richmond/Code/leak.r
 /Contamination/Colorado/Code/leak.r
+
+#Ignore all csv files
+*.csv

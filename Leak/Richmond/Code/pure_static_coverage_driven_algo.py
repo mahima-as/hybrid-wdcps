@@ -25,6 +25,8 @@ parent_indices_of_ones = []
 
 final_sensor_location = []
 
+budget_expt_coverage = []
+
 while(np.sum(covered_locations) != len(init_array)):
 	# print temp_counter
 	# temp_counter += 1
@@ -33,11 +35,9 @@ while(np.sum(covered_locations) != len(init_array)):
 # for i in xrange(0,10):
 	score = np.zeros(len(init_array))
 	uncovered_number = len(np.where(covered_locations == False)[0])
-	if(uncovered_number<=3):
+	if(uncovered_number==1):
 		last_location = np.where(covered_locations==False)[0]
-		if len(last_location)>1:
-			for location in last_location:
-				placed_locations[location] = True
+		placed_locations[last_location] = True
 		break
 	print uncovered_number
 	for i in xrange(0,len(init_array)):
@@ -81,6 +81,8 @@ while(np.sum(covered_locations) != len(init_array)):
 	covered_indices = np.append(covered_indices,indices_of_ones)
 	covered_indices = np.unique(covered_indices)
 
+	budget_expt_coverage.append(len(covered_indices))
+
 	uncovered_indices = np.array(list(set(uncovered_indices) - set(covered_indices)))
 
 
@@ -118,6 +120,8 @@ while(np.sum(covered_locations) != len(init_array)):
 	# print pairwise_event_queue
 print placed_locations
 print sum(placed_locations)
-np.savetxt("./sensorLocations/pure_static_coverage_driven.csv",placed_locations,delimiter=",")
+
+np.savetxt("./budgetExpt/pure_static_coverage_results.csv",budget_expt_coverage,delimiter=",")
+# np.savetxt("./sensorLocations/pure_static_coverage_driven.csv",placed_locations,delimiter=",")
 # print init_array
 
